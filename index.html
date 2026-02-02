@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>QR Code Generator</title>
+  <style>
+    :root {
+      --zee-licht: #4F5F7A;
+      --zee-donker:#3D4853;
+      --meekrap:#C2004B;
+      --bg:#F6F7F9;
+      --card:#FFFFFF;
+      --text:#1C232B;
+      --muted:#5A6775;
+      --border:#D9DEE6;
+      --radius:14px;
+    }
+
+    * { 
+      box-sizing:border-box;
+    }
+    
+    body {
+      margin:24px;
+      max-width:1100px;
+      background:var(--bg);
+      color:var(--text);
+      font-family:Roboto, sans-serif;
+    }
+
+    h1 { 
+      margin:0 0 8px;
+      font-size:28px;
+    }
+    
+    h3 {
+      margin:0 0 10px;
+    }
+
+    .hint {
+      font-size:12px;
+      color:var(--muted); 
+      margin-top:6px; 
+      line-height:1.4;
+    }
+
+    .row {
+      display:grid;
+      grid-template-columns:1.2fr .8fr;
+      gap:16px;
+      align-items:start;
+    }
+
+    .card {
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      padding:16px;
+      box-shadow:0 1px 0 rgba(0,0,0,.03);
+    }
+
+    label {
+      display:block;
+      font-size:12px;
+      color:var(--muted);
+      margin-top:10px;
+    }
+
+    input, select, button, textarea {
+      width:100%;
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:10px 12px;
+      font-size:14px;
+      background:#fff;
+      color:var(--text);
+    }
+
+    textarea {
+      height:150px;
+      font-family:monospace;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline:none;
+      border-color:rgba(194,0,75,.6);
+      box-shadow:0 0 0 3px rgba(194,0,75,.15);
+    }
+
+    .inline{ 
+      display:flex; 
+      gap:10px; 
+    }
+    
+    .inline>* { 
+      flex:1;
+    }
+
+    button {
+      cursor:pointer;
+      background:#fff;
+      transition:.12s;
+    }
+    
+    button:hover { 
+      background:#FAFBFC;
+    }
+
+    button.primary {
+      background:var(--meekrap);
+      border-color:var(--meekrap);
+      color:#fff;
+    }
+    
+    button.primary:hover { 
+      filter:brightness(.92);
+    }
+
+    button:disabled { 
+      opacity:.55; 
+      cursor:not-allowed;
+    }
+
+    .previewWrap { 
+      display:flex; 
+      gap:16px; 
+      align-items:start;
+    }
+
+    #preview {
+      width: 260px;
+      aspect-ratio: 1 / 1;
+      border:1px dashed rgba(79,95,122,.45);
+      border-radius:16px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:linear-gradient(
+        180deg,
+        rgba(79,95,122,.06),
+        rgba(79,95,122,.02)
+      );
+      overflow:hidden;
+    }
+
+    #preview canvas, #preview svg {
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    .pill {
+      display:inline-block;
+      padding:2px 10px;
+      border-radius:999px;
+      background:rgba(79,95,122,.12);
+      font-size:12px;
+      color:var(--zee-donker);
+      border:1px solid rgba(79,95,122,.2);
+    }
+
+    .progress {
+      height:10px;
+      background:rgba(79,95,122,.12);
+      border-radius:999px;
+      overflow:hidden;
+      margin-top:12px;
+    }
+    
+    .bar { 
+      height:100%; 
+      width:0%; 
+      background:var(--meekrap);
+    }
+
+    table {
+      width:100%;
+      border-collapse:collapse;
+      margin-top:12px;
+      font-size:13px;
+    }
+    
+    th,td {
+      border-bottom:1px solid #EEF1F5;
+      padding:8px 6px;
+      text-align:left;
+    }
+
+    .colour-grid {
+      display:grid;
+      grid-template-columns:44px 1fr;
+      gap:10px;
+      align-items:center;
+    }
+    
+    .colour-swatch {
+      width:44px;
+      height:40px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      overflow:hidden;
+    }
+    
+    .colour-swatch input[type=color] {
+      width:100%;
+      height:100%;
+      border:0;
+      padding:0;
+      cursor:pointer;
+      appearance:none;
+    }
+    
+    .colour-swatch input[type=color]::-webkit-color-swatch-wrapper { 
+      padding:0;
+    }
+    
+    .colour-swatch input[type=color]::-webkit-color-swatch { 
+      border:0;
+    }
+  </style>
+</head>
+<body>
+  <h1>QR Code Generator</h1>
+  <p class="hint">Paste a CSV (filename,data), choose a style and export all QR codes in one ZIP file.</p>
+  <div class="row">
+    <div class="card">
+      <h3>1) CSV Input</h3>
+      <label>CSV (filename,data)</label>
+      <textarea id="csv">
+filename,data
+qr-001,https://example.com/a
+qr-002,https://example.com/b
+      </textarea>
+      <div class="inline">
+        <div>
+          <label>Delimiter</label>
+          <select id="delimiter">
+            <option value=",">Comma (,)</option>
+            <option value=";">Semicolon (;)</option>
+            <option value="\t">Tab</option>
+          </select>
+        </div>
+        <div>
+          <label>Output format</label>
+          <select id="format">
+            <option value="png">PNG</option>
+            <option value="svg">SVG</option>
+          </select>
+        </div>
+      </div>
+      <div class="inline">
+        <div>
+          <label>Size (px)</label>
+          <input id="size" type="number" value="512" min="128" max="2048">
+        </div>
+        <div>
+          <label>Error correction</label>
+          <select id="ec">
+            <option value="L">L (7%)</option>
+            <option value="M" selected>M (15%)</option>
+            <option value="Q">Q (25%)</option>
+            <option value="H">H (30%)</option>
+          </select>
+        </div>
+      </div>
+      <div class="inline">
+        <div>
+          <label>Foreground colour</label>
+          <div class="colour-grid">
+            <div class="colour-swatch">
+              <input id="fg" type="color" value="#3D4853">
+            </div>
+            <input id="fgHex" type="text" value="#3D4853">
+          </div>
+        </div>
+        <div>
+          <label>Background colour</label>
+          <div class="colour-grid">
+            <div class="colour-swatch">
+              <input id="bg" type="color" value="#FFFFFF">
+            </div>
+            <input id="bgHex" type="text" value="#FFFFFF">
+          </div>
+        </div>
+      </div>
+      <label>Style</label>
+      <select id="preset">
+        <option value="classic">Classic</option>
+        <option value="rounded">Rounded</option>
+        <option value="dots">Dots</option>
+        <option value="fancy">Decorative</option>
+      </select>
+      <label>Logo (optional)</label>
+      <input id="logo" type="file" accept="image/*">
+      <div class="hint">When using a logo, use error correction <b>Q</b> or <b>H</b>.</div>
+      <div class="inline" style="margin-top:12px;">
+        <button id="btnPreview">Update preview</button>
+        <button id="btnExport" class="primary">Export ZIP</button>
+      </div>
+      <div class="progress"><div class="bar" id="bar"></div></div>
+      <div class="hint" id="status"></div>
+      <table id="table" style="display:none;">
+        <thead><tr><th>Filename</th><th>Data</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h3>2) Preview</h3>
+      <div class="previewWrap">
+        <div id="preview"><span class="pill">Preview</span></div>
+        <div class="hint">
+          The preview uses the <b>first row</b> from the CSV.
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.6.0/lib/qr-code-styling.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script>
+    const $ = id => document.getElementById(id);
+    const bar = $("bar");
+    const status = $("status");
+    let logoData = null;
+
+    function bindColor(color, hex){
+      const c=$(color), h=$(hex);
+      c.oninput=()=>h.value=c.value.toUpperCase();
+      h.oninput=()=>{ if(/^#([0-9A-F]{6})$/i.test(h.value)) c.value=h.value; };
+    }
+    bindColor("fg","fgHex");
+    bindColor("bg","bgHex");
+
+    $("logo").onchange=async e=>{
+      const f=e.target.files[0];
+      if(!f){ logoData=null; return; }
+      const r=new FileReader();
+      r.onload=()=>logoData=r.result;
+      r.readAsDataURL(f);
+    };
+
+    function parseCSV(text, d){
+      return text.split(/\r?\n/).map(l=>l.trim()).filter(Boolean).slice(1)
+        .map(l=>l.split(d)).filter(r=>r.length>=2)
+        .map(r=>({name:r[0],data:r.slice(1).join(d)}));
+    }
+
+    function opts(data){
+      const fg=$("fg").value, bg=$("bg").value;
+      const size=+$("size").value;
+      const ec=$("ec").value;
+      const p=$("preset").value;
+
+      const styles={
+        classic:{dotsOptions:{color:fg,type:"square"}},
+        rounded:{dotsOptions:{color:fg,type:"rounded"}},
+        dots:{dotsOptions:{color:fg,type:"dots"}},
+        fancy:{dotsOptions:{color:fg,type:"classy-rounded"}}
+      };
+
+      return Object.assign({
+        width:size,height:size,data,
+        qrOptions:{errorCorrectionLevel:ec},
+        backgroundOptions:{color:bg},
+        image:logoData,
+        imageOptions:{margin:8,imageSize:.3}
+      },styles[p]);
+    }
+
+    async function preview(){
+      const rows=parseCSV($("csv").value,$("delimiter").value);
+      $("preview").innerHTML="";
+      if(!rows.length)return;
+      const qr=new QRCodeStyling(opts(rows[0].data));
+      qr.append($("preview"));
+    }
+
+    async function exportZip(){
+      const rows=parseCSV($("csv").value,$("delimiter").value);
+      if(!rows.length)return;
+      const zip=new JSZip();
+      const qr=new QRCodeStyling(opts(rows[0].data));
+      for(let i=0;i<rows.length;i++){
+        qr.update(opts(rows[i].data));
+        const blob=await qr.getRawData($("format").value);
+        zip.file(rows[i].name+"."+$("format").value,blob);
+        bar.style.width=((i+1)/rows.length*100)+"%";
+        status.textContent=`${i+1} van ${rows.length} gegenereerd`;
+        await new Promise(r=>setTimeout(r,0));
+      }
+      const out=await zip.generateAsync({type:"blob"});
+      const a=document.createElement("a");
+      a.href=URL.createObjectURL(out);
+      a.download="qrcodes.zip";
+      a.click();
+    }
+
+    $("btnPreview").onclick=preview;
+    $("btnExport").onclick=exportZip;
+    preview();
+  </script>
+</body>
+</html>
