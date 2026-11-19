@@ -11,6 +11,113 @@
   <meta name="theme-color" content="#C2004B">
 </head>
 <body>
+  <header>
+    <h1>QR Code Generator</h1>
+    <p>Simple QR-code generator that supports bulk-csv, styling & logo's while fully running in your browser.</p>
+  </header>
+  <main>
+    <section>
+      <section>
+        <h2>1. Input</h2>
+        <div>
+          <div>
+            <label>Delimiter</label>
+            <select>
+              <option>Comma (,)</option>
+              <option>Semicolon (;)</option>
+              <option>Tab</option>
+            </select>
+          </div>
+          <div>
+            <label>Columns</label>
+            <div>name,url</div>
+            <div>A header row is optional and detected automatically.</div>
+          </div>
+        </div>
+        <div>
+          <label>Rows</label>
+          <textarea spellcheck="false" placeholder="codeberg,https://codeberg.org/Joery&#10;github,https://github.com/Joery"></textarea>
+          <div>Quoted values are supported. Empty lines are ignored. Maximum 500 rows per bulk download.</div>
+        </div>
+      </section>
+      <section>
+        <h2>2. Settings</h2>
+        <div>
+          <div>
+            <label>Format</label>
+            <select>
+              <option>PNG</option>
+              <option>SVG</option>
+            </select>
+          </div>
+          <div>
+            <label>Size (px)</label>
+            <input>
+          </div>
+          <div>
+            <label>Correction</label>
+            <select>
+              <option>Low (7%)</option>
+              <option>Medium (15%)</option>
+              <option>High (25%)</option>
+              <option>Maximum (30%)</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <div>
+            <label>Style</label>
+            <select>
+              <option>Square</option>
+              <option>Dots</option>
+              <option>Rounded</option>
+              <option>Extra rounded</option>
+              <option>Classy</option>
+              <option>Classy rounded</option>
+            </select>
+          </div>
+          <div>
+            <label>Foreground</label>
+            <div>
+              <input>
+              <input>
+            </div>
+          </div>
+          <div>
+            <label>Background</label>
+            <div>
+              <input>
+              <input>
+            </div>
+          </div>
+        </div>
+        <div>
+          <label>Logo (optional)</label>
+          <div>
+            <div>
+              <img>
+              <input>
+              <button>Clear</button>
+            </div>
+            <div>For better scan reliability with a logo, use error correction High or Maximum.</div>
+          </div>
+        </div>
+        <div>
+          <button>Update preview</button>
+          <button>Download</button>
+        </div>
+        <div>
+          <div></div>
+        </div>
+        <div></div>
+      </section>
+    </section>
+    <aside>
+      <h2></h2>
+      <div></div>
+    </aside>
+  </main>
+  <footer></footer>
   <script src="js/app.js"></script>
   <script src="js/jszip.min.js"></script>
   <script src="js/qr-code-styling.min.js"></script>
